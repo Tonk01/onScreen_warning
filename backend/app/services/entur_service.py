@@ -1,6 +1,7 @@
 import httpx 
 
 import xml.etree.ElementTree as ET
+from backend.app.models.alert import Alert, Affects
 
 ENTUR_ALERTS_URL = "https://api.entur.io/realtime/v1/rest/sx"
 
@@ -65,17 +66,18 @@ async def get_service_alerts():
 
         affects = parse_affects(situation)
 
-        alerts.append({
-            "id": situation_number,
-            "creation_time": creation_time,
-            "status": progress,
-            "severity": severity,
-            "start_time": start_time,
-            "end_time": end_time,
-            "summary": summary,
-            "description": description,
-            "affects": affects,
-        })
+        alert = Alert(
+            id = situation_number,
+            creation_time = creation_time,
+            status = progress,
+            severity = severity,
+            start_time = start_time,
+            end_time = end_time,
+            summary = summary,
+            description = description,
+            affects = affects,
+        )
+        alerts.append(alert)
 
     return alerts
 
@@ -105,7 +107,7 @@ def parse_affects(situation):
             journeys.append(journey.text)
 
     return {
-        "lines": list(dict.fromkeys(lines)),
-        "stops": list(dict.fromkeys(stops)),
-        "journeys": list(dict.fromkeys(journeys))
+        lines: list(dict.fromkeys(lines)),
+        stops: list(dict.fromkeys(stops)),
+        journeys: list(dict.fromkeys(journeys))
     }
