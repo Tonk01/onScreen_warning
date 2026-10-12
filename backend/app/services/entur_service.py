@@ -106,8 +106,8 @@ def parse_affects(situation):
         if journey.text:
             journeys.append(journey.text)
 
-    return {
-        lines: list(dict.fromkeys(lines)),
-        stops: list(dict.fromkeys(stops)),
-        journeys: list(dict.fromkeys(journeys))
-    }
+    return Affects(
+        lines =list(dict.fromkeys(lines)),
+        stops = list(dict.fromkeys(stops)),
+        journeys = list(dict.fromkeys(journeys))
+    )
