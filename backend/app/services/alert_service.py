@@ -1,8 +1,33 @@
 from datetime import datetime 
 
-from backend.app.models.alert_state import AlertState
+
 from backend.app.services.entur_service import get_service_alerts
 from backend.app.services.test_alert_service import get_test_alert
+
+from backend.app.database import SessionLocal
+from backend.app.models.alert_state import AlertStateDB, AlertState
+
+    # get or create alertstate from the db.
+def get_alert_state(alert_id: str) -> AlertState:
+    with SessionLocal() as db:
+        state_db = db.get(AlertStateDB, alert_id)
+
+        if state_db is None:
+            state_db = AlertStateDB(
+                alert_id = alert_id,
+                seen = False,
+                dismissed = False
+            )
+
+            db.add(state_db)
+            db.commit()
+            db.refresh(state_db)
+
+        return AlertState(
+            alert_id = state_db.alert_id,
+            seen = state_db.seen,
+            dismissed = state_db.dismissed
+        )
 
 alert_states: dict [str, AlertState] = {}
 
@@ -25,13 +50,6 @@ async def get_active_alerts():
         visible_alerts.append(alert)
 
     return visible_alerts
-
-    # get or create an AlertState
-def get_alert_state(alert_id: str) -> AlertState:
-    if alert_id not in alert_states:
-        alert_states[alert_id] = AlertState(alert_id = alert_id)
-
-    return alert_states[alert_id]
 
     # self-explan
 def mark_alert_seen(alert_id: str) -> AlertState:

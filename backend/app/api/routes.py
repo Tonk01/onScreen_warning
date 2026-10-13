@@ -7,7 +7,6 @@ from backend.app.services.alert_service import (
     get_active_test_alerts, 
     get_dismissed_alerts, 
     restore_alert,
-    
 )
 
 router = APIRouter()
