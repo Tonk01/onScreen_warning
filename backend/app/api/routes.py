@@ -4,9 +4,8 @@ from backend.app.services.alert_service import (
     get_active_alerts, 
     mark_alert_seen, 
     dismiss_alert, 
-    get_active_test_alerts, 
     get_dismissed_alerts, 
-    restore_alert,
+    restore_alert
 )
 
 from backend.app.models.alert_state import AlertState
@@ -39,18 +38,3 @@ def dismiss(alert_id: str):
 @router.post("/alerts/{alert_id}/restore")
 def restore(alert_id: str):
     return restore_alert(alert_id)
-
-
-
-
-
-
-
-
-
-
-
-# temporary for testing
-@router.get("/test-alerts")
-async def test_alerts():
-    return await get_active_test_alerts()

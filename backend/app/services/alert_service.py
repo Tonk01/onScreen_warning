@@ -1,11 +1,10 @@
 from datetime import datetime 
 
-
 from backend.app.services.entur_service import get_service_alerts
-from backend.app.services.test_alert_service import get_test_alert
 
 from backend.app.database import SessionLocal
 from backend.app.models.alert_state import AlertStateDB, AlertState
+from backend.app.models.alert import Alert
 
     # get or create alertstate from the db.
 def get_alert_state(alert_id: str) -> AlertState:
@@ -33,6 +32,8 @@ alert_states: dict [str, AlertState] = {}
 
 async def get_active_alerts():
     alerts = await get_service_alerts()
+
+    cleanup_alert_states(alerts)
 
     now = datetime.now().astimezone()
 
@@ -145,23 +146,14 @@ async def get_dismissed_alerts():
 
     return dismissed_alerts
 
-    # temporary for test cases. 
-async def get_active_test_alerts():
-    alerts = get_test_alert()
+def cleanup_alert_states(active_alerts: list[Alert]):
+    active_ids = {alert.id for alert in active_alerts}
 
-    now = datetime.now().astimezone()
+    with SessionLocal() as db:
+        states = db.query(AlertStateDB).all()
 
-    visible_alerts = []
+        for state in states:
+            if state.alert_id not in active_ids:
+                db.delete(state)
 
-    for alert in alerts:
-        if not alert.is_active(now):
-            continue
-
-        state = get_alert_state(alert.id)
-
-        if state.dismissed:
-            continue
-
-        visible_alerts.append(alert)
-
-    return visible_alerts
+        db.commit()
