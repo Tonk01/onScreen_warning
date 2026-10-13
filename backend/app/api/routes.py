@@ -9,6 +9,9 @@ from backend.app.services.alert_service import (
     restore_alert,
 )
 
+from backend.app.models.alert_state import AlertState
+from backend.app.models.alert import Alert
+
 router = APIRouter()
 
 
@@ -16,7 +19,7 @@ router = APIRouter()
 def health_check():
     return {"status:" "ok"}
 
-@router.get("/alerts")
+@router.get("/alerts", response_model = list[Alert])
 async def alerts():
     return await get_active_alerts()
 
@@ -25,11 +28,11 @@ async def dismissed_alerts():
     return await get_dismissed_alerts()
 
 
-@router.post("/alerts/{alert_id}/seen")
+@router.post("/alerts/{alert_id}/seen", response_model = AlertState)
 def mark_seen(alert_id: str):
     return mark_alert_seen(alert_id)
 
-@router.post("/alerts/{alert_id}/dismiss")
+@router.post("/alerts/{alert_id}/dismiss", response_model = AlertState)
 def dismiss(alert_id: str):
     return dismiss_alert(alert_id)
 

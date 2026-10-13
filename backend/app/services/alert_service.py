@@ -53,23 +53,78 @@ async def get_active_alerts():
 
     # self-explan
 def mark_alert_seen(alert_id: str) -> AlertState:
-    state = get_alert_state(alert_id)
-    state.seen = True
+    with SessionLocal() as db:
+        state_db = db.get(AlertStateDB, alert_id)
 
-    return state
+        if state_db is None:
+            state_db = AlertStateDB(
+                alert_id = alert_id,
+                seen = True,
+                dismissed = False
+            )
+
+            db.add(state_db)
+        else: 
+            state_db.seen = True
+
+        db.commit()
+        db.refresh(state_db)
+
+        return AlertState(
+            alert_id = state_db.alert_id,
+            seen = state_db.seen,
+            dismissed = state_db.dismissed
+        )
 
     # self-explan
 def dismiss_alert(alert_id: str) -> AlertState:
-    state = get_alert_state(alert_id)
-    state.dismissed = True
+    with SessionLocal() as db:
+        state_db = db.get(AlertStateDB, alert_id)
 
-    return state
+        if state_db is None:
+            state_db = AlertStateDB(
+                alert_id = alert_id,
+                seen = False,
+                dismissed = True
+            )
+
+            db.add(state_db)
+        else:
+            state_db.seen = True
+            state_db.dismissed = True
+
+        db.commit()
+        db.refresh(state_db)
+
+        return AlertState(
+            alert_id = state_db.alert_id,
+            seen = state_db.seen,
+            dismissed = state_db.dismissed
+        )
 
 def restore_alert(alert_id: str) -> AlertState:
-    state = get_alert_state(alert_id)
-    state.dismissed = False
+    with SessionLocal() as db:
+        state_db = db.get(AlertStateDB, alert_id)
 
-    return state
+        if state_db is None:
+            state_db = AlertStateDB(
+                alert_id = alert_id,
+                seen = False,
+                dismissed = False
+            )
+
+            db.add(state_db)
+        else:
+            state_db.dismissed = False
+
+        db.commit()
+        db.refresh(state_db)
+
+        return AlertState(
+            alert_id = state_db.alert_id,
+            seen = state_db.seen,
+            dismissed = state_db.dismissed
+        )
 
 async def get_dismissed_alerts():
     alerts = await get_service_alerts()
