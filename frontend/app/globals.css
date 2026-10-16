@@ -11,3 +11,28 @@ body {
 body {
   font-family: Arial, sans-serif;
 }
+
+main {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+
+.alert-card {
+  border: 1px solid #d1d1d1;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.alert-lines {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.alert-summary {
+  margin: 0px;
+  font-size: 18px;
+}
