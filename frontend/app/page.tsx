@@ -37,12 +37,28 @@ export default function Home() {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [expandedAlertId, setExpandedAlertId] = useState<string | null>(null);
   const [view, setView]  = useState<"active" | "dismissed">("active");
+  const [dismissedAlertIds, setDismissedAlerts] = useState<string[]>([]);
 
   useEffect(() => {
     fetch("http://127.0.0.1:8000/alerts")
     .then((response) => response.json())
     .then((data) => setAlerts(data));
   }, []);
+
+  function dismissAlerts(alertId: string) {
+    setDismissedAlerts((current) => [...current, alertId]);
+    setExpandedAlertId(null);
+  }
+
+  function restoreAlert(alertId: string) {
+    setDismissedAlerts((current) => current.filter((id) => id !== alertId));
+    setExpandedAlertId(null);
+  }
+
+  const activeAlerts = alerts.filter((alert) => !dismissedAlertIds.includes(alert.id));
+  const dismissedAlerts = alerts.filter((alert) => dismissedAlertIds.includes(alert.id));
+
+  const displayedAlerts = view === "active" ? activeAlerts : dismissedAlerts;
 
   return (
       <main>
@@ -58,7 +74,7 @@ export default function Home() {
           </button>
         </div>
 
-        {alerts.map((alert) => {
+        {displayedAlerts.map((alert) => {
           const lines = [...new Set(getAffectedLines(alert))];
           const message = alert.description || alert.summary;
           const isExpanded = expandedAlertId === alert.id;
@@ -77,6 +93,24 @@ export default function Home() {
                 <div className="alert-details">
                   <p>{alert.summary}</p>
                   <h3> {formatDateTime(alert.start_time)} ー {formatDateTime(alert.end_time)} </h3>
+
+                  {view === "active" ? (
+                    <button onClick = {(event) => {
+                      event.stopPropagation();
+                      dismissAlerts(alert.id);
+                    }}
+                    >
+                      Dismiss alert
+                    </button>
+                  ) : (
+                    <button onClick = {(event) => {
+                      event.stopPropagation();
+                      restoreAlert(alert.id);
+                  }}
+                  >
+                    Activate alert
+                    </button>
+                  )}
                 </div>
               )}
             </div>
