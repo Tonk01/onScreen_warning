@@ -19,9 +19,24 @@ function getAffectedLines(alert: Alert): String[] {
   }).filter((line): line is string => Boolean(line))
 }
 
+function formatDateTime(value: string | null): string {
+  if (!value) {
+    return "N/A";
+  }
+
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(new Date(value));
+}
+
 export default function Home() {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [expandedAlertId, setExpandedAlertId] = useState<string | null>(null);
+  const [view, setView]  = useState<"active" | "dismissed">("active");
 
   useEffect(() => {
     fetch("http://127.0.0.1:8000/alerts")
@@ -32,6 +47,16 @@ export default function Home() {
   return (
       <main>
         <h1> OnScreen </h1>
+
+        <div className="view-switcher">
+          <button onClick={() => setView("active")}>
+            Active alerts
+          </button>
+
+          <button onClick={() => setView("dismissed")}>
+            Dismissed alerts
+          </button>
+        </div>
 
         {alerts.map((alert) => {
           const lines = [...new Set(getAffectedLines(alert))];
@@ -51,8 +76,7 @@ export default function Home() {
               {isExpanded && (
                 <div className="alert-details">
                   <p>{alert.summary}</p>
-                  <p>{alert.start_time}</p>
-                  <p>{alert.end_time}</p>
+                  <h3> {formatDateTime(alert.start_time)} ー {formatDateTime(alert.end_time)} </h3>
                 </div>
               )}
             </div>
