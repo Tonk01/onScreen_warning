@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Alert } from "@/types/alert";
 
-function getAffectedLines(alert: Alert): String[] {
+function getAffectedLines(alert: Alert): string[] {
   if (alert.affects.lines.length > 0) {
     return alert.affects.lines.map((line) => line.split(":").pop())
     .filter((line): line is string => Boolean (line));

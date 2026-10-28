@@ -16,7 +16,7 @@ router = APIRouter()
 
 @router.get("/health")
 def health_check():
-    return {"status:" "ok"}
+    return {"status": "ok"}
 
 @router.get("/alerts", response_model = list[Alert])
 async def alerts():
