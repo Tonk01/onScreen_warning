@@ -6,6 +6,11 @@ from backend.app.database import SessionLocal
 from backend.app.models.alert_state import AlertStateDB, AlertState
 from backend.app.models.alert import Alert
 
+    # TODO Consider retiring backend SQLite logic. 
+    # Plans to use localStorage instead of using accounts and servers. | TBD |
+    # User <- server <- API fetch [ need to stop rate limit, likely will have to use a server for updates ] 
+    # Hmm ? ? ? Possible slight reconstruction needed. 
+
     # get or create alertstate from the db.
 def get_alert_state(alert_id: str) -> AlertState:
     with SessionLocal() as db:

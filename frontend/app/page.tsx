@@ -38,6 +38,34 @@ export default function Home() {
   const [expandedAlertId, setExpandedAlertId] = useState<string | null>(null);
   const [view, setView]  = useState<"active" | "dismissed">("active");
   const [dismissedAlertIds, setDismissedAlerts] = useState<string[]>([]);
+  const [storageLoaded, setStorageLoaded] = useState(false);
+
+
+  useEffect(() => {
+    const storedDismissed = localStorage.getItem("dismissedAlerts");
+
+    if (storedDismissed) {
+      try {
+        const parsed = JSON.parse(storedDismissed);
+
+        if (Array.isArray(parsed)) {
+          setDismissedAlerts(parsed);
+        }
+      } catch {
+        localStorage.removeItem("dismissedAlerts");
+      }
+    }
+
+    setStorageLoaded(true);
+  }, []);
+
+ useEffect(() => {
+  if (!storageLoaded) {
+    return;
+  }
+  localStorage.setItem("dismissedAlerts", JSON.stringify(dismissedAlertIds));
+ }, [dismissedAlertIds, storageLoaded]);
+
 
   useEffect(() => {
     fetch("http://127.0.0.1:8000/alerts")
