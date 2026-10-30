@@ -1,164 +1,33 @@
 from datetime import datetime 
 
 from backend.app.services.entur_service import get_service_alerts
-
-from backend.app.database import SessionLocal
-from backend.app.models.alert_state import AlertStateDB, AlertState
 from backend.app.models.alert import Alert
+from backend.app.services.azure_blob_service import get_alert_snapshot, upload_alert_snapshot
 
-    # TODO Consider retiring backend SQLite logic. 
-    # Plans to use localStorage instead of using accounts and servers. | TBD |
-    # User <- server <- API fetch [ need to stop rate limit, likely will have to use a server for updates ] 
-    # Hmm ? ? ? Possible slight reconstruction needed. 
+    # gets active alerts from blob storage snapshot
+async def get_active_alerts() -> list[Alert]:
+    snapshot = await get_alert_snapshot()
 
-    # get or create alertstate from the db.
-def get_alert_state(alert_id: str) -> AlertState:
-    with SessionLocal() as db:
-        state_db = db.get(AlertStateDB, alert_id)
-
-        if state_db is None:
-            state_db = AlertStateDB(
-                alert_id = alert_id,
-                seen = False,
-                dismissed = False
-            )
-
-            db.add(state_db)
-            db.commit()
-            db.refresh(state_db)
-
-        return AlertState(
-            alert_id = state_db.alert_id,
-            seen = state_db.seen,
-            dismissed = state_db.dismissed
-        )
-
-alert_states: dict [str, AlertState] = {}
-
-async def get_active_alerts():
-    alerts = await get_service_alerts()
-
-    cleanup_alert_states(alerts)
+    alerts = [
+        Alert(**alert_data) 
+        for alert_data in snapshot["alerts"]
+    ]
 
     now = datetime.now().astimezone()
 
-    visible_alerts = []
-
-    for alert in alerts: 
-        if not alert.is_active(now):
-            continue
-
-        state = get_alert_state(alert.id)
-
-        if state.dismissed:
-            continue
-
-        visible_alerts.append(alert)
-
-    return visible_alerts
-
-    # self-explan
-def mark_alert_seen(alert_id: str) -> AlertState:
-    with SessionLocal() as db:
-        state_db = db.get(AlertStateDB, alert_id)
-
-        if state_db is None:
-            state_db = AlertStateDB(
-                alert_id = alert_id,
-                seen = True,
-                dismissed = False
-            )
-
-            db.add(state_db)
-        else: 
-            state_db.seen = True
-
-        db.commit()
-        db.refresh(state_db)
-
-        return AlertState(
-            alert_id = state_db.alert_id,
-            seen = state_db.seen,
-            dismissed = state_db.dismissed
-        )
-
-    # self-explan
-def dismiss_alert(alert_id: str) -> AlertState:
-    with SessionLocal() as db:
-        state_db = db.get(AlertStateDB, alert_id)
-
-        if state_db is None:
-            state_db = AlertStateDB(
-                alert_id = alert_id,
-                seen = False,
-                dismissed = True
-            )
-
-            db.add(state_db)
-        else:
-            state_db.seen = True
-            state_db.dismissed = True
-
-        db.commit()
-        db.refresh(state_db)
-
-        return AlertState(
-            alert_id = state_db.alert_id,
-            seen = state_db.seen,
-            dismissed = state_db.dismissed
-        )
-
-def restore_alert(alert_id: str) -> AlertState:
-    with SessionLocal() as db:
-        state_db = db.get(AlertStateDB, alert_id)
-
-        if state_db is None:
-            state_db = AlertStateDB(
-                alert_id = alert_id,
-                seen = False,
-                dismissed = False
-            )
-
-            db.add(state_db)
-        else:
-            state_db.dismissed = False
-
-        db.commit()
-        db.refresh(state_db)
-
-        return AlertState(
-            alert_id = state_db.alert_id,
-            seen = state_db.seen,
-            dismissed = state_db.dismissed
-        )
-
-async def get_dismissed_alerts():
-    alerts = await get_service_alerts()
-    now = datetime.now().astimezone()
-
-    dismissed_alerts = []
+    active_alerts = []
 
     for alert in alerts:
         if not alert.is_active(now):
             continue
 
-        state = get_alert_state(alert.id)
+        active_alerts.append(alert)
 
-        if not state.dismissed:
-            continue
+    return active_alerts
 
-        dismissed_alerts.append(alert)
+async def refresh_alert_snapshot() -> list[Alert]:
+    alerts = await get_service_alerts()
 
-    return dismissed_alerts
+    await upload_alert_snapshot(alerts)
 
-def cleanup_alert_states(active_alerts: list[Alert]):
-    active_ids = {alert.id for alert in active_alerts}
-
-    with SessionLocal() as db:
-        states = db.query(AlertStateDB).all()
-
-        for state in states:
-            if state.alert_id not in active_ids:
-                db.delete(state)
-
-        db.commit()
+    return alerts
