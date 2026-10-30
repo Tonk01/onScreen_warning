@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+from backend.app.services.azure_blob_service import get_alert_snapshot
 
 from backend.app.services.alert_service import (
     get_active_alerts, 
@@ -38,3 +39,7 @@ def dismiss(alert_id: str):
 @router.post("/alerts/{alert_id}/restore")
 def restore(alert_id: str):
     return restore_alert(alert_id)
+
+@router.get("/azure_test")
+async def azure_test():
+    return await get_alert_snapshot()
