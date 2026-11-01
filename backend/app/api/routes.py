@@ -22,7 +22,6 @@ async def azure_test():
 
 
 
-
 @router.post("/azure-test/upload")
 async def azure_upload_test():
     alerts = await get_active_alerts()
