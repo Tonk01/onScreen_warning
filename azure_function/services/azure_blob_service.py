@@ -41,5 +41,5 @@ async def upload_alert_snapshot(alerts: list[Alert]):
         await blob_client.upload_blob(
             payload,
             overwrite=True,
-            content_settings=ContentSettings(content_Type="application/json")
+            content_settings=ContentSettings(content_type="application/json")
         )

@@ -1,4 +1,4 @@
-import httpx 
+import httpx
 
 import xml.etree.ElementTree as ET
 from models.alert import Alert, Affects
