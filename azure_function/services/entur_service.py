@@ -18,7 +18,13 @@ async def get_service_alerts():
 
         response.raise_for_status()
 
-    root = ET.fromstring(response.text)
+    if not response.content:
+        raise ValueError("Entur returned an empty response")
+
+    try: 
+        root = ET.fromstring(response.text)
+    except ET.parseError as exc:
+        raise ValueError("Entur returned invalid XML") from exc
 
     alerts = []
 
