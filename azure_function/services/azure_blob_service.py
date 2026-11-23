@@ -15,10 +15,17 @@ async def upload_alert_snapshot(alerts: list[Alert]):
     if not AZURE_STORAGE_CONNECTION_STRING:
         raise RuntimeError("AZURE_STORAGE_CONNECTION_STRING is not configured correctly")
 
+    if not isinstance(alerts, list): 
+        raise ValueError("Alerts must be a list")
+
+    if not all(isinstance(alert, Alert) for alert in alerts):
+        raise ValueError("Snapshot contains invalid objects")
+
     snapshot = {
         "updated_at": datetime.now(timezone.utc).isoformat(),
-        "alerts": [ alert.model_dump(mode="json")
-                   for alert in alerts
+        "alerts": [ 
+                    alert.model_dump(mode="json")
+                    for alert in alerts
             ],
     }
 

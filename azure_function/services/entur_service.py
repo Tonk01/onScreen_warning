@@ -23,7 +23,7 @@ async def get_service_alerts():
 
     try: 
         root = ET.fromstring(response.text)
-    except ET.parseError as exc:
+    except ET.ParseError as exc:
         raise ValueError("Entur returned invalid XML") from exc
 
     alerts = []
