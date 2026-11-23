@@ -8,6 +8,5 @@ The purpose of this project is to collect and aggregate service disruption alert
 
 ## TODO: 
 
-show "updated at: xx-xx"
 Azure updater? 
 Improve alert and UI

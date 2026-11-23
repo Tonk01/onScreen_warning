@@ -25,6 +25,7 @@ function formatDateTime(value: string | null): string {
   }
 
   return new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Oslo",
     day: "numeric",
     month: "short",
     hour: "2-digit",
@@ -39,6 +40,7 @@ export default function Home() {
   const [view, setView]  = useState<"active" | "dismissed">("active");
   const [dismissedAlertIds, setDismissedAlerts] = useState<string[]>([]);
   const [storageLoaded, setStorageLoaded] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
 
 
   useEffect(() => {
@@ -69,7 +71,12 @@ export default function Home() {
 
   useEffect(() => {
     fetch("http://127.0.0.1:8000/alerts")
-    .then((response) => response.json())
+    .then((response) => {
+      const lastModified = response.headers.get("Last-Modified");
+
+      setLastUpdated(lastModified);
+      return response.json();
+  })
     .then((data) => setAlerts(data));
   }, []);
 
@@ -101,6 +108,12 @@ export default function Home() {
             Dismissed alerts
           </button>
         </div>
+
+        {lastUpdated && (
+          <p>
+            Last Updated: {formatDateTime(lastUpdated)}
+          </p>
+        )}
 
         {displayedAlerts.map((alert) => {
           const lines = [...new Set(getAffectedLines(alert))];

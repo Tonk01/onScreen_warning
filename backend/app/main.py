@@ -16,4 +16,5 @@ app.add_middleware(
     allow_credentials = False,
     allow_methods = ["GET"],
     allow_headers = ["Content-Type"],
+    expose_headers = ["Last-Modified"],
 )

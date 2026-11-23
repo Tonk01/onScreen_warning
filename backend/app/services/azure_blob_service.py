@@ -27,4 +27,6 @@ async def get_alert_snapshot():
         downloader = await blob_client.download_blob()
         data = await downloader.readall()
 
-    return json.loads(data)
+        properties = await blob_client.get_blob_properties()
+
+    return json.loads(data), properties.last_modified
