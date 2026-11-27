@@ -8,5 +8,4 @@ The purpose of this project is to collect and aggregate service disruption alert
 
 ## TODO: 
 
-Azure updater? 
 Improve alert and UI
